@@ -1,0 +1,34 @@
+{
+  "name": "cse341-final-project",
+  "version": "1.0.0",
+  "description": "final project for cse 341 class for a recipe api",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "lint": "eslint *.{js,jsx}",
+    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc",
+    "swagger-autogen": "node ./swagger.js"
+  },
+  "author": "Hunter Blake, Andre Pedrosa, Everton Alves",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "eslint": "^8.51.0",
+    "express": "^4.18.2",
+    "express-openid-connect": "^2.17.1",
+    "express-validator": "^7.0.1",
+    "mongodb": "^6.1.0",
+    "mongoose": "^7.6.1",
+    "prettier": "^3.0.3"
+  },
+  "devDependencies": {
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-react": "^7.33.2",
+    "nodemon": "^3.0.1",
+    "swagger-autogen": "^2.23.6",
+    "swagger-ui-express": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=14 <18.17.1"
+  }
+}
