@@ -1,4 +1,4 @@
 // DEVELOPMENT ROUTES (LOCALHOST)
-
+GET http://localhost:3000/recipes HTTP/1.1
 
 // PRODUCTION ROUTES (RENDER)
