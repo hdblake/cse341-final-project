@@ -1,5 +1,73 @@
 // DEVELOPMENT ROUTES (LOCALHOST)
+//RECIPES
+### get all recipes
 GET http://localhost:3000/recipes HTTP/1.1
+
+### recipe by id
+GET http://localhost:3000/recipes/65553498a52944f24b944e2e HTTP/1.1
+
+### recipe Comments
+GET http://localhost:3000/recipes/65553498a52944f24b944e2e/comments HTTP/1.1
+
+### recipe ratings
+GET http://localhost:3000/recipes/65553498a52944f24b944e2e/ratings HTTP/1.1
+
+//USERS
+### get all users
+GET http://localhost:3000/users HTTP/1.1
+
+### get users by id
+GET http://localhost:3000/users/6555356ea52944f24b94cb0e HTTP/1.1
+
+//COMMENTS
+### get all comments
+GET http://localhost:3000/comments HTTP/1.1
+
+### get comments by id
+GET http://localhost:3000/comments/655537955ec8e5fc11d46d5c HTTP/1.1
+
+//RATINGS
+### get all ratings
+GET http://localhost:3000/ratings HTTP/1.1
+
+### get ratings by id
+GET http://localhost:3000/ratings/6555369f70f0c0e495b8fd27 HTTP/1.1
+###Render
 GET http://localhost:3000/api-docs HTTP/1.1
 
 // PRODUCTION ROUTES (RENDER)
+//RECIPES
+### get all recipes
+GET https://cse341-final-project-kz8y.onrender.com/recipes HTTP/1.1
+
+### recipe by id
+GET https://cse341-final-project-kz8y.onrender.com/recipes/65553498a52944f24b944e2e HTTP/1.1
+
+### recipe Comments
+GET https://cse341-final-project-kz8y.onrender.com/recipes/65553498a52944f24b944e2e/comments HTTP/1.1
+
+### recipe ratings
+GET https://cse341-final-project-kz8y.onrender.com/recipes/65553498a52944f24b944e2e/ratings HTTP/1.1
+
+//USERS
+### get all users
+GET https://cse341-final-project-kz8y.onrender.com/users HTTP/1.1
+
+### get users by id
+GET https://cse341-final-project-kz8y.onrender.com/users/6555356ea52944f24b94cb0e HTTP/1.1
+
+//COMMENTS
+### get all comments
+GET https://cse341-final-project-kz8y.onrender.com/comments HTTP/1.1
+
+### get comments by id
+GET https://cse341-final-project-kz8y.onrender.com/comments/655537955ec8e5fc11d46d5c HTTP/1.1
+
+//RATINGS
+### get all ratings
+GET https://cse341-final-project-kz8y.onrender.com/ratings HTTP/1.1
+
+### get ratings by id
+GET https://cse341-final-project-kz8y.onrender.com/ratings/6555369f70f0c0e495b8fd27 HTTP/1.1
+###Render
+GET https://cse341-final-project-kz8y.onrender.com/api-docs HTTP/1.1
