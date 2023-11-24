@@ -1,27 +1,15 @@
-const router = require("express").Router();
-const recipes = require('../controller/recipes');
-const users = require('../controller/users');
-const comments = require('../controller/comments');
-const ratings = require('../controller/ratings');
+const router = require('express').Router();
+const auth0 = require('./auth0');
+const comments = require('./comments');
+const ratings = require('./ratings');
+const recipes = require('./recipes');
+const users = require('./users');
 
-router.use("/", require("./swagger"));
-
-//recipes
-router.get("/recipes", recipes.getAllRecipes);
-router.get("/recipes/:id", recipes.getRecipeById);
-router.get("/recipes/:id/comments", recipes.getRecipeComments);
-router.get("/recipes/:id/ratings", recipes.getRecipeRatings);
-
-//users
-router.get("/users", users.getAllUsers);
-router.get("/users/:id", users.getUsersById);
-
-//comments
-router.get("/comments", comments.getAllComments);
-router.get("/comments/:id", comments.getCommentsById);
-
-//ratings
-router.get("/ratings", ratings.getAllRatings);
-router.get("/ratings/:id", ratings.getRatinsById);
+router.use('/', auth0);
+router.use('/comments', comments);
+router.use('/ratings', ratings);
+router.use('/recipes', recipes);
+router.use('/users', users);
+router.use('/', require('./swagger'));
 
 module.exports = router;
