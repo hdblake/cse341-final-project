@@ -133,6 +133,13 @@
         "description": "Update a recipe in the database. You must be logged in and must be the recipe's owner to perform this action.",
         "parameters": [
           {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "24 character hex string, 12 byte Uint8Array, or an integer"
+          },
+          {
             "name": "body",
             "in": "body",
             "description": "Recipe json object",
