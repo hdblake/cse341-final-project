@@ -30,4 +30,20 @@ const getUsersById = async (req, res, next) => {
   }
 };
 
-module.exports = { getAllUsers, getUsersById };
+const deleteUser = async (req, res, next) => {
+  const userId = new Object(req.params.id);
+
+  const result = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('users')
+    .deleteOne({ _id: userId }, userId);
+
+  if (result.deletedCount > 0) {
+    res.status(200).send();
+  } else {
+    res.status(500).json(result.error || 'An error occured, please try again.');
+  }
+};
+
+module.exports = { getAllUsers, getUsersById, deleteUser };

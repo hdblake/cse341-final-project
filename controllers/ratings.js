@@ -30,4 +30,20 @@ const getRatingsById = async (req, res, next) => {
   }
 };
 
-module.exports = { getAllRatings, getRatingsById };
+const deleteRating = async (req, res, next) => {
+  const ratingId = new Object(req.params.id);
+
+  const result = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('ratings')
+    .deleteOne({ _id: ratingId }, ratingId);
+
+  if (result.deletedCount > 0) {
+    res.status(200).send();
+  } else {
+    res.status(500).json(result.error || 'An error occured, please try again.');
+  }
+};
+
+module.exports = { getAllRatings, getRatingsById, deleteRating };

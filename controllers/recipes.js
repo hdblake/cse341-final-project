@@ -66,9 +66,26 @@ const getRecipeRatings = async (req, res, next) => {
   }
 };
 
+const deleteRecipe = async (req, res, next) => {
+  const recipeId = new Object(req.params.id);
+
+  const result = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('recipes')
+    .deleteOne({ _id: recipeId }, recipeId);
+
+  if (result.deletedCount > 0) {
+    res.status(200).send();
+  } else {
+    res.status(500).json(result.error || 'An error occured, please try again.');
+  }
+};
+
 module.exports = {
   getAllRecipes,
   getRecipeById,
   getRecipeComments,
-  getRecipeRatings
+  getRecipeRatings,
+  deleteRecipe
 };
