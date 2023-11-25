@@ -31,13 +31,14 @@ const getRatingsById = async (req, res, next) => {
 };
 
 const deleteRating = async (req, res, next) => {
-  const ratingId = new Object(req.params.id);
+  const id = req.params.id;
+  const objectId = new ObjectId(id);
 
   const result = await mongodb
     .getDb()
     .db(process.env.DATABASE_NAME)
     .collection('ratings')
-    .deleteOne({ _id: ratingId }, ratingId);
+    .deleteOne({ _id: objectId }, objectId);
 
   if (result.deletedCount > 0) {
     res.status(200).send();

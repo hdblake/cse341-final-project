@@ -31,13 +31,14 @@ const getUsersById = async (req, res, next) => {
 };
 
 const deleteUser = async (req, res, next) => {
-  const userId = new Object(req.params.id);
+  const id = req.params.id;
+  const objectId = new ObjectId(id);
 
   const result = await mongodb
     .getDb()
     .db(process.env.DATABASE_NAME)
     .collection('users')
-    .deleteOne({ _id: userId }, userId);
+    .deleteOne({ _id: objectId }, objectId);
 
   if (result.deletedCount > 0) {
     res.status(200).send();

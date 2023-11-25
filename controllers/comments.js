@@ -31,13 +31,14 @@ const getCommentsById = async (req, res, next) => {
 };
 
 const deleteComment = async (req, res, next) => {
-  const commentId = new Object(req.params.id);
+  const id = req.params.id;
+  const objectId = new ObjectId(id);
 
   const result = await mongodb
     .getDb()
     .db(process.env.DATABASE_NAME)
     .collection('comments')
-    .deleteOne({ _id: commentId }, commentId);
+    .deleteOne({ _id: objectId }, objectId);
 
   if (result.deletedCount > 0) {
     res.status(200).send();
