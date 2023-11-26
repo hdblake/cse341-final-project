@@ -198,6 +198,12 @@
           "204": {
             "description": "No Content"
           },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
           "422": {
             "description": "Invalid Data"
           },

@@ -1,5 +1,6 @@
 const { ObjectId } = require('mongodb');
 const mongodb = require('../db/connect');
+const dataChecks = require('../utils/dataChecks');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -66,9 +67,45 @@ const getRecipeRatings = async (req, res, next) => {
   }
 };
 
+const updateRecipe = async (req, res, next) => {
+  const recipeData = req.body;
+  const id = req.params.id;
+  // Get user's Auth0 ID from JWT.
+  const userCredentials = req.oidc.user.sub;
+
+  // Checks if the user exists and get their mongoDB id.
+  let userId;
+  try {
+    userId = await dataChecks.getUserIdByCredentials(userCredentials);
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+
+  // Query for a recipe with the given recipe id and user id.
+  const query = {
+    _id: new ObjectId(id),
+    author: userId.toString()
+  };
+  const recipes = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('recipes');
+  const result = await recipes.updateOne(query, { $set: recipeData });
+
+  // TODO: improve validation for the case of a invalid recipe id as the code
+  // bellow assumes the recipe id is correct.
+  if (result.matchedCount === 0) {
+    return res
+      .status(403)
+      .send("You must be the recipe's author in order to edit it");
+  }
+  return res.status(204).send();
+};
+
 module.exports = {
   getAllRecipes,
   getRecipeById,
   getRecipeComments,
-  getRecipeRatings
+  getRecipeRatings,
+  updateRecipe
 };
