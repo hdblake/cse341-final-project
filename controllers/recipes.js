@@ -102,6 +102,7 @@ const updateRecipe = async (req, res, next) => {
       .send("You must be the recipe's author in order to edit it");
   }
   return res.status(204).send();
+}
 
 const createNewRecipe = async (req, res, next) => {
   if (!req.body || Object.keys(req.body).length === 0) {
@@ -143,6 +144,7 @@ const createNewRecipe = async (req, res, next) => {
 
   const result = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('recipes').insertOne(newRecipe);
   return res.status(201).json({ id: result.insertedId });
+}
 
 
 module.exports = {
