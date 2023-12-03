@@ -84,10 +84,17 @@ const updateRecipe = async (req, res, next) => {
     return res.status(404).send(error.message);
   }
 
+  // Checks if the given recipe id is valid.
+  try {
+    await dataChecks.checkCollectionForId('recipes', id);
+  } catch (error) {
+    return res.status(422).send(error.message);
+  }
+
   // Query for a recipe with the given recipe id and user id.
   const query = {
     _id: new ObjectId(id),
-    author: userId.toString()
+    author: userId
   };
   const recipes = await mongodb
     .getDb()
@@ -95,8 +102,6 @@ const updateRecipe = async (req, res, next) => {
     .collection('recipes');
   const result = await recipes.updateOne(query, { $set: recipeData });
 
-  // TODO: improve validation for the case of a invalid recipe id as the code
-  // bellow assumes the recipe id is correct.
   if (result.matchedCount === 0) {
     return res
       .status(403)

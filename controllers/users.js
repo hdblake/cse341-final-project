@@ -1,6 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 const { ObjectId } = require('mongodb');
 const mongodb = require('../db/connect');
+const dataChecks = require('../utils/dataChecks');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -29,6 +30,52 @@ const getUsersById = async (req, res, next) => {
   } else {
     res.status(404).send('User not found');
   }
+};
+
+const updateUser = async (req, res, next) => {
+  const userData = req.body;
+  // The id of the user that will be updated.
+  const idToUpdate = req.params.id;
+  // Get user's Auth0 ID from JWT.
+  const currentUserCredentials = req.oidc.user.sub;
+
+  // Checks if the user to be updated exists and get their mongoDB id.
+  let currentUserId;
+  try {
+    currentUserId = await dataChecks.getUserIdByCredentials(
+      currentUserCredentials
+    );
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+
+  // Checks if the given user id is valid.
+  try {
+    await dataChecks.checkCollectionForId('users', idToUpdate);
+  } catch (error) {
+    return res.status(422).send(error.message);
+  }
+
+  // Ensures the current user is the same as the user to be updated.
+  if (currentUserId !== idToUpdate) {
+    return res.status(403).send('You are not the owner of this user profile.');
+  }
+
+  // Update the user's data.
+  try {
+    const query = {
+      _id: new ObjectId(idToUpdate),
+    };
+    const users = await mongodb
+      .getDb()
+      .db(process.env.DATABASE_NAME)
+      .collection('users');
+    await users.updateOne(query, { $set: userData });
+  } catch (error) {
+    return res.status(500).send('An error occurred while updating the user.');
+  }
+
+  return res.status(204).send();
 };
 
 const createNewUser = async (req, res, next) => {
@@ -90,4 +137,10 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
-module.exports = { getAllUsers, getUsersById, createNewUser, deleteUser };
+module.exports = {
+  getAllUsers,
+  getUsersById,
+  updateUser,
+  createNewUser,
+  deleteUser
+};
