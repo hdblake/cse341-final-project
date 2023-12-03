@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins */
 const { ObjectId } = require('mongodb');
 const mongodb = require('../db/connect');
 const dataChecks = require('../utils/dataChecks');
@@ -99,24 +100,32 @@ const updateRecipe = async (req, res, next) => {
   if (result.matchedCount === 0) {
     return res
       .status(403)
-      .send("You must be the recipe's author in order to edit it");
+      .send('You must be the recipes author in order to edit it');
   }
   return res.status(204).send();
-}
+};
 
 const createNewRecipe = async (req, res, next) => {
   if (!req.body || Object.keys(req.body).length === 0) {
-    return res.status(400).json({ error: "Request body is empty" });
+    return res.status(400).json({ error: 'Request body is empty' });
   }
   const newRecipe = req.body;
-  if (!newRecipe.hasOwnProperty('author') || !newRecipe.author ||
-      !newRecipe.hasOwnProperty('recipe_name') || !newRecipe.recipe_name ||
-      !newRecipe.hasOwnProperty('recipe_instructions') || !newRecipe.recipe_instructions) {
-    return res.status(400).json({ error: "It is required to have the recipe_name, recipe_instructions and author id." });
+  if (
+    !newRecipe.hasOwnProperty('author') ||
+    !newRecipe.author ||
+    !newRecipe.hasOwnProperty('recipe_name') ||
+    !newRecipe.recipe_name ||
+    !newRecipe.hasOwnProperty('recipe_instructions') ||
+    !newRecipe.recipe_instructions
+  ) {
+    return res.status(400).json({
+      error:
+        'It is required to have the recipe_name, recipe_instructions and author id.'
+    });
   }
 
   if (typeof newRecipe.author !== 'string' || newRecipe.author.length !== 24) {
-    return res.status(400).json({ error: "Author has the wrong format" });
+    return res.status(400).json({ error: 'Author has the wrong format' });
   }
 
   if (!newRecipe.hasOwnProperty('serves')) {
@@ -134,18 +143,42 @@ const createNewRecipe = async (req, res, next) => {
   if (!newRecipe.hasOwnProperty('rating')) {
     newRecipe.rating = null;
   }
-  
-  const userId = new ObjectId(newRecipe.author);
-  const doesUserExists = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('users').findOne({ _id: userId });
 
-  if(!doesUserExists){
-    return res.status(400).json({ error: `The author does not exists.`});
+  const userId = new ObjectId(newRecipe.author);
+  const doesUserExists = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('users')
+    .findOne({ _id: userId });
+
+  if (!doesUserExists) {
+    return res.status(400).json({ error: `The author does not exists.` });
   }
 
-  const result = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('recipes').insertOne(newRecipe);
+  const result = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('recipes')
+    .insertOne(newRecipe);
   return res.status(201).json({ id: result.insertedId });
-}
+};
 
+const deleteRecipe = async (req, res, next) => {
+  const id = req.params.id;
+  const objectId = new ObjectId(id);
+
+  const result = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('recipes')
+    .deleteOne({ _id: objectId }, objectId);
+
+  if (result.deletedCount > 0) {
+    res.status(200).send();
+  } else {
+    res.status(500).json(result.error || 'An error occured, please try again.');
+  }
+};
 
 module.exports = {
   getAllRecipes,
@@ -153,5 +186,6 @@ module.exports = {
   getRecipeComments,
   getRecipeRatings,
   updateRecipe,
-  createNewRecipe
+  createNewRecipe,
+  deleteRecipe
 };
