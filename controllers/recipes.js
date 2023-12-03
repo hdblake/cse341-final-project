@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins */
 const { ObjectId } = require('mongodb');
 const mongodb = require('../db/connect');
 const checkInfo = require('./checkInfo');
@@ -91,10 +92,17 @@ const updateRecipe = async (req, res, next) => {
     return res.status(404).send(error.message);
   }
 
+  // Checks if the given recipe id is valid.
+  try {
+    await dataChecks.checkCollectionForId('recipes', id);
+  } catch (error) {
+    return res.status(422).send(error.message);
+  }
+
   // Query for a recipe with the given recipe id and user id.
   const query = {
     _id: new ObjectId(id),
-    author: userId.toString()
+    author: userId
   };
   const recipes = await mongodb
     .getDb()
@@ -102,19 +110,17 @@ const updateRecipe = async (req, res, next) => {
     .collection('recipes');
   const result = await recipes.updateOne(query, { $set: recipeData });
 
-  // TODO: improve validation for the case of a invalid recipe id as the code
-  // bellow assumes the recipe id is correct.
   if (result.matchedCount === 0) {
     return res
       .status(403)
-      .send("You must be the recipe's author in order to edit it");
+      .send('You must be the recipes author in order to edit it');
   }
   return res.status(204).send();
-}
+};
 
 const createNewRecipe = async (req, res, next) => {
   if (!req.body || Object.keys(req.body).length === 0) {
-    return res.status(400).json({ error: "Request body is empty" });
+    return res.status(400).json({ error: 'Request body is empty' });
   }
   const newRecipe = req.body;
   const permittedKeys = [  "public", "serves", "prep_time", "ingredients", "recipe_name", "recipe_instructions", "rating"];
@@ -157,10 +163,30 @@ const createNewRecipe = async (req, res, next) => {
   
   newRecipe.author = userId.toString();
 
-  const result = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('recipes').insertOne(newRecipe);
+  const result = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('recipes')
+    .insertOne(newRecipe);
   return res.status(201).json({ id: result.insertedId });
-}
+};
 
+const deleteRecipe = async (req, res, next) => {
+  const id = req.params.id;
+  const objectId = new ObjectId(id);
+
+  const result = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('recipes')
+    .deleteOne({ _id: objectId });
+
+  if (result.deletedCount > 0) {
+    res.status(200).send();
+  } else {
+    res.status(500).json(result.error || 'An error occured, please try again.');
+  }
+};
 
 module.exports = {
   getAllRecipes,
@@ -168,5 +194,6 @@ module.exports = {
   getRecipeComments,
   getRecipeRatings,
   updateRecipe,
-  createNewRecipe
+  createNewRecipe,
+  deleteRecipe
 };

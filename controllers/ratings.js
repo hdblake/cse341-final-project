@@ -1,5 +1,7 @@
+/* eslint-disable no-prototype-builtins */
 const { ObjectId } = require('mongodb');
 const mongodb = require('../db/connect');
+const dataChecks = require('../utils/dataChecks');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -39,11 +41,52 @@ const calculateNewAverage = (allRatings) => {
   return sum / totalRatings;
 };
 
+const updateRating = async (req, res, next) => {
+  const ratingData = req.body;
+  const id = req.params.id;
+  // Get user's Auth0 ID from JWT.
+  const userCredentials = req.oidc.user.sub;
+
+  // Checks if the user exists and get their mongoDB id.
+  let userId;
+  try {
+    userId = await dataChecks.getUserIdByCredentials(userCredentials);
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+
+  // Checks if the given rating id is valid.
+  try {
+    await dataChecks.checkCollectionForId('ratings', id);
+  } catch (error) {
+    return res.status(422).send(error.message);
+  }
+
+  // Query for a rating with the given rating id and user id.
+  const query = {
+    _id: new ObjectId(id),
+    user_id: userId.toString(),
+  };
+  const ratings = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('ratings');
+  const result = await ratings.updateOne(query, { $set: ratingData });
+
+  if (result.matchedCount === 0) {
+    return res
+      .status(403)
+      .send("You must be the rating's author in order to edit it");
+  }
+  return res.status(204).send();
+};
+
 const createNewRating = async (req, res, next) => {
   if (!req.body || Object.keys(req.body).length === 0) {
-    return res.status(400).json({ error: "Request body is empty" });
+    return res.status(400).json({ error: 'Request body is empty' });
   }
   const newRating = req.body;
+
   const permittedKeys = ["recipe_id", "rating_value"];
   let checkExtraInfo = checkInfo.hasExtraInfo(newComment, permittedKeys)
   if(checkExtraInfo.result){
@@ -66,38 +109,84 @@ const createNewRating = async (req, res, next) => {
     return res.status(404).send(error.message);
   }
   newRating.user_id = userId.toString();
+
   newRating.rating_value = parseInt(newRating.rating_value);
 
   // Check if the conversion resulted in a valid integer
   if (Number.isNaN(newRating.rating_value)) {
-    return res.status(400).json({ error: "rating_value is not a valid number" });
+    return res
+      .status(400)
+      .json({ error: 'rating_value is not a valid number' });
   }
 
   const recipeId = new ObjectId(newRating.recipe_id);
-  
-  const doesRecipeExist = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('recipes').findOne({ _id: recipeId });
-  if(!doesRecipeExist){
-    return res.status(400).json({ error: `The recipe does not exists.`});
+
+  const doesRecipeExist = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('recipes')
+    .findOne({ _id: recipeId });
+  if (!doesRecipeExist) {
+    return res.status(400).json({ error: `The recipe does not exists.` });
   }
-  
+
   const existingRating = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('ratings').findOne({ recipe_id: newRating.recipe_id, user_id: newRating.user_id});
 
+
   if (existingRating) {
-    return res.status(400).json({ error: `The user already put his rating on this recipe.`});
+    return res
+      .status(400)
+      .json({ error: `The user already put his rating on this recipe.` });
   }
 
-  const result = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('ratings').insertOne(newRating);
-  
+  const result = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('ratings')
+    .insertOne(newRating);
+
   let newAvarageRating = newRating.rating_value;
-  const allRatings = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('ratings').find({ recipe_id: newRating.recipe_id}).toArray();
+  const allRatings = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('ratings')
+    .find({ recipe_id: newRating.recipe_id })
+    .toArray();
 
   if (allRatings.length > 0) {
-    newAvarageRating = calculateNewAverage(allRatings)
+    newAvarageRating = calculateNewAverage(allRatings);
   }
 
-  mongodb.getDb().db(process.env.DATABASE_NAME).collection('recipes').updateOne({ _id: recipeId }, { $set: { rating: newAvarageRating } });
+  await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('recipes')
+    .updateOne({ _id: recipeId }, { $set: { rating: newAvarageRating } });
 
   return res.status(201).json({ id: result.insertedId });
 };
 
-module.exports = { getAllRatings, getRatingsById, createNewRating };
+const deleteRating = async (req, res, next) => {
+  const id = req.params.id;
+  const objectId = new ObjectId(id);
+
+  const result = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('ratings')
+    .deleteOne({ _id: objectId });
+
+  if (result.deletedCount > 0) {
+    res.status(200).send();
+  } else {
+    res.status(500).json(result.error || 'An error occured, please try again.');
+  }
+};
+
+module.exports = {
+  getAllRatings,
+  getRatingsById,
+  updateRating,
+  createNewRating,
+  deleteRating
+};
