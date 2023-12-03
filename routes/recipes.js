@@ -10,5 +10,7 @@ router.get('/:id/ratings', controller.recipes.getRecipeRatings);
 
 // The requiresAuth() function checks if there is a user logged in.
 router.put('/:id', requiresAuth(), controller.recipes.updateRecipe);
+router.delete('/:id', requiresAuth(), controller.recipes.deleteRecipe);
 router.post('/', controller.recipes.createNewRecipe);
+
 module.exports = router;
