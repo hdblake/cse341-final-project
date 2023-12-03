@@ -103,7 +103,7 @@ const deleteComment = async (req, res, next) => {
     .getDb()
     .db(process.env.DATABASE_NAME)
     .collection('comments')
-    .deleteOne({ _id: objectId }, objectId);
+    .deleteOne({ _id: objectId });
 
   if (result.deletedCount > 0) {
     res.status(200).send();
