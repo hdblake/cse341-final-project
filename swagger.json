@@ -33,20 +33,10 @@
             "schema": {
               "type": "object",
               "required": [
-                "author",
-                "public",
-                "serves",
-                "prep_time",
-                "ingredients",
                 "recipe_name",
                 "recipe_instructions"
               ],
               "properties": {
-                "author": {
-                  "type": "string",
-                  "example": "6555356ea52944f24b94cb0e",
-                  "description": "The user id of the author. Must be a 24 character hex string, 12 byte Uint8Array, or an integer"
-                },
                 "public": {
                   "type": "boolean",
                   "example": true,
@@ -302,18 +292,13 @@
             "required": true,
             "schema": {
               "type": "object",
-              "required": ["user_name", "user_credentials", "email"],
+              "required": ["user_name", "email"],
               "properties": {
                 "user_name": {
                   "type": "string",
                   "example": "Jack Fisherman",
                   "minLength": 2,
                   "description": "The name of the user."
-                },
-                "user_credentials": {
-                  "type": "string",
-                  "example": "1qaz@WSX3edc$RFV5tgb",
-                  "description": "The user's authentication token."
                 },
                 "email": {
                   "type": "string",
@@ -441,17 +426,12 @@
             "required": true,
             "schema": {
               "type": "object",
-              "required": ["recipe_id", "user_id", "comment_text"],
+              "required": ["recipe_id", "comment_text"],
               "properties": {
                 "recipe_id": {
                   "type": "string",
                   "example": "65553498a52944f24b944e2e",
                   "description": "The id of the recipe that the comment is for. Must be a 24 character hex string, 12 byte Uint8Array, or an integer"
-                },
-                "user_id": {
-                  "type": "string",
-                  "example": "6555356ea52944f24b94cb0e",
-                  "description": "The id of the user that is commenting. Must be a 24 character hex string, 12 byte Uint8Array, or an integer"
                 },
                 "comment_text": {
                   "type": "string",
@@ -568,17 +548,12 @@
             "required": true,
             "schema": {
               "type": "object",
-              "required": ["recipe_id", "user_id", "rating_value"],
+              "required": ["recipe_id", "rating_value"],
               "properties": {
                 "recipe_id": {
                   "type": "string",
                   "example": "65553498a52944f24b944e2e",
                   "description": "The id of the recipe that the rating is for. Must be a 24 character hex string, 12 byte Uint8Array, or an integer"
-                },
-                "user_id": {
-                  "type": "string",
-                  "example": "6555356ea52944f24b94cb0e",
-                  "description": "The id of the user that is giving the rating. Must be a 24 character hex string, 12 byte Uint8Array, or an integer"
                 },
                 "rating_value": {
                   "type": "integer",

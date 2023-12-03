@@ -44,20 +44,33 @@ const createNewRating = async (req, res, next) => {
     return res.status(400).json({ error: "Request body is empty" });
   }
   const newRating = req.body;
-  if (!newRating.hasOwnProperty('recipe_id') || !newRating.recipe_id ||
-      !newRating.hasOwnProperty('user_id') || !newRating.user_id ||
-      !newRating.hasOwnProperty('rating_value') || !newRating.rating_value) {
-    return res.status(400).json({ error: "It is required to have the recipe_id, user_id and rating_value." });
-  }  
+  const permittedKeys = ["recipe_id", "rating_value"];
+  let checkExtraInfo = checkInfo.hasExtraInfo(newComment, permittedKeys)
+  if(checkExtraInfo.result){
+    return res.status(400).json({ error: checkExtraInfo.message});
+  }
+  const requiredKeys = ["recipe_id", "rating_value"];
+  let checkRequiredKeys = checkInfo.hasRequiredKeys(newComment, requiredKeys);
+  if (checkRequiredKeys.result) {
+    return res.status(400).json({ error: checkRequiredKeys.message });
+  }
+
+  // Get user's Auth0 ID from JWT.
+  const userCredentials = req.oidc.user.sub;
+
+  // Checks if the user exists and get their mongoDB id.
+  let userId;
+  try {
+    userId = await dataChecks.getUserIdByCredentials(userCredentials);
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+  newRating.user_id = userId.toString();
   newRating.rating_value = parseInt(newRating.rating_value);
 
   // Check if the conversion resulted in a valid integer
   if (Number.isNaN(newRating.rating_value)) {
     return res.status(400).json({ error: "rating_value is not a valid number" });
-  }
-
-  if (typeof newRating.user_id !== 'string' || newRating.user_id.length !== 24) {
-    return res.status(400).json({ error: "user_id has the wrong format" });
   }
 
   const recipeId = new ObjectId(newRating.recipe_id);
@@ -67,11 +80,6 @@ const createNewRating = async (req, res, next) => {
     return res.status(400).json({ error: `The recipe does not exists.`});
   }
   
-  const userId = new ObjectId(newRating.user_id);
-  const doesUserExists = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('users').findOne({ _id: userId });
-  if(!doesUserExists){
-    return res.status(400).json({ error: `The user does not exists.`});
-  }
   const existingRating = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('ratings').findOne({ recipe_id: newRating.recipe_id, user_id: newRating.user_id});
 
   if (existingRating) {
@@ -87,7 +95,7 @@ const createNewRating = async (req, res, next) => {
     newAvarageRating = calculateNewAverage(allRatings)
   }
 
-  await mongodb.getDb().db(process.env.DATABASE_NAME).collection('recipes').updateOne({ _id: recipeId }, { $set: { rating: newAvarageRating } });
+  mongodb.getDb().db(process.env.DATABASE_NAME).collection('recipes').updateOne({ _id: recipeId }, { $set: { rating: newAvarageRating } });
 
   return res.status(201).json({ id: result.insertedId });
 };

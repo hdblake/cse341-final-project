@@ -1,5 +1,6 @@
 const { ObjectId } = require('mongodb');
 const mongodb = require('../db/connect');
+const checkInfo = require('./checkInfo');
 const dataChecks = require('../utils/dataChecks');
 const dotenv = require('dotenv');
 dotenv.config();
@@ -20,14 +21,21 @@ const getAllRecipes = async (req, res, next) => {
 const getRecipeById = async (req, res, next) => {
   const id = req.params.id;
   const objectId = new ObjectId(id);
+  const userCredentials = req.oidc.user.sub;
+  let userId;
+  userId = await dataChecks.getUserIdByCredentials(userCredentials);
   const result = await mongodb
     .getDb()
     .db(process.env.DATABASE_NAME)
     .collection('recipes')
     .findOne({ _id: objectId });
   if (result) {
-    res.setHeader('Content-Type', 'application/json');
-    res.status(200).json(result);
+    if(result.public || result.author == userId){
+      res.setHeader('Content-Type', 'application/json');
+      res.status(200).json(result);
+    } else{
+      res.status(404).send("You don't have the permission to see this recipe");
+    }
   } else {
     res.status(404).send('Recipe not found');
   }
@@ -109,14 +117,15 @@ const createNewRecipe = async (req, res, next) => {
     return res.status(400).json({ error: "Request body is empty" });
   }
   const newRecipe = req.body;
-  if (!newRecipe.hasOwnProperty('author') || !newRecipe.author ||
-      !newRecipe.hasOwnProperty('recipe_name') || !newRecipe.recipe_name ||
-      !newRecipe.hasOwnProperty('recipe_instructions') || !newRecipe.recipe_instructions) {
-    return res.status(400).json({ error: "It is required to have the recipe_name, recipe_instructions and author id." });
+  const permittedKeys = [  "public", "serves", "prep_time", "ingredients", "recipe_name", "recipe_instructions", "rating"];
+  let checkExtraInfo = checkInfo.hasExtraInfo(newRecipe, permittedKeys)
+  if(checkExtraInfo.result){
+    return res.status(400).json({ error: checkExtraInfo.message});
   }
-
-  if (typeof newRecipe.author !== 'string' || newRecipe.author.length !== 24) {
-    return res.status(400).json({ error: "Author has the wrong format" });
+  const requiredKeys = ["recipe_name", "recipe_instructions"];
+  let checkRequiredKeys = checkInfo.hasRequiredKeys(newRecipe, requiredKeys);
+  if (checkRequiredKeys.result) {
+    return res.status(400).json({ error: checkRequiredKeys.message });
   }
 
   if (!newRecipe.hasOwnProperty('serves')) {
@@ -134,13 +143,19 @@ const createNewRecipe = async (req, res, next) => {
   if (!newRecipe.hasOwnProperty('rating')) {
     newRecipe.rating = null;
   }
-  
-  const userId = new ObjectId(newRecipe.author);
-  const doesUserExists = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('users').findOne({ _id: userId });
 
-  if(!doesUserExists){
-    return res.status(400).json({ error: `The author does not exists.`});
+  // Get user's Auth0 ID from JWT.
+  const userCredentials = req.oidc.user.sub;
+
+  // Checks if the user exists and get their mongoDB id.
+  let userId;
+  try {
+    userId = await dataChecks.getUserIdByCredentials(userCredentials);
+  } catch (error) {
+    return res.status(404).send(error.message);
   }
+  
+  newRecipe.author = userId.toString();
 
   const result = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('recipes').insertOne(newRecipe);
   return res.status(201).json({ id: result.insertedId });
