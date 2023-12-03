@@ -1,6 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 const { ObjectId } = require('mongodb');
 const mongodb = require('../db/connect');
+const dataChecks = require('../utils/dataChecks');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -29,6 +30,46 @@ const getCommentsById = async (req, res, next) => {
   } else {
     res.status(404).send('Comment not found');
   }
+};
+
+const updateComment = async (req, res, next) => {
+  const commentData = req.body;
+  const id = req.params.id;
+  // Get user's Auth0 ID from JWT.
+  const userCredentials = req.oidc.user.sub;
+
+  // Checks if the user exists and get their mongoDB id.
+  let userId;
+  try {
+    userId = await dataChecks.getUserIdByCredentials(userCredentials);
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+
+  // Checks if the given comment id is valid.
+  try {
+    await dataChecks.checkCollectionForId('comments', id);
+  } catch (error) {
+    return res.status(422).send(error.message);
+  }
+
+  // Query for a comment with the given comment id and user id.
+  const query = {
+    _id: new ObjectId(id),
+    user_id: userId.toString(),
+  };
+  const comments = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('comments');
+  const result = await comments.updateOne(query, { $set: commentData });
+
+  if (result.matchedCount === 0) {
+    return res
+      .status(403)
+      .send("You must be the comment's author in order to edit it");
+  }
+  return res.status(204).send();
 };
 
 const createNewComment = async (req, res, next) => {
@@ -115,6 +156,7 @@ const deleteComment = async (req, res, next) => {
 module.exports = {
   getAllComments,
   getCommentsById,
+  updateComment,
   createNewComment,
   deleteComment
 };

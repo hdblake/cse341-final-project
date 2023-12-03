@@ -1,6 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 const { ObjectId } = require('mongodb');
 const mongodb = require('../db/connect');
+const dataChecks = require('../utils/dataChecks');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -38,6 +39,46 @@ const calculateNewAverage = (allRatings) => {
     sum += rating.rating_value;
   }
   return sum / totalRatings;
+};
+
+const updateRating = async (req, res, next) => {
+  const ratingData = req.body;
+  const id = req.params.id;
+  // Get user's Auth0 ID from JWT.
+  const userCredentials = req.oidc.user.sub;
+
+  // Checks if the user exists and get their mongoDB id.
+  let userId;
+  try {
+    userId = await dataChecks.getUserIdByCredentials(userCredentials);
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+
+  // Checks if the given rating id is valid.
+  try {
+    await dataChecks.checkCollectionForId('ratings', id);
+  } catch (error) {
+    return res.status(422).send(error.message);
+  }
+
+  // Query for a rating with the given rating id and user id.
+  const query = {
+    _id: new ObjectId(id),
+    user_id: userId.toString(),
+  };
+  const ratings = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('ratings');
+  const result = await ratings.updateOne(query, { $set: ratingData });
+
+  if (result.matchedCount === 0) {
+    return res
+      .status(403)
+      .send("You must be the rating's author in order to edit it");
+  }
+  return res.status(204).send();
 };
 
 const createNewRating = async (req, res, next) => {
@@ -152,6 +193,7 @@ const deleteRating = async (req, res, next) => {
 module.exports = {
   getAllRatings,
   getRatingsById,
+  updateRating,
   createNewRating,
   deleteRating
 };
