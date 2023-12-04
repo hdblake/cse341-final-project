@@ -8,7 +8,8 @@ router.get('/:id/comments', controller.recipes.getRecipeComments);
 router.get('/:id/ratings', controller.recipes.getRecipeRatings);
 // The requiresAuth() function checks if there is a user logged in.
 router.put('/:id', requiresAuth(), controller.recipes.updateRecipe);
+
 router.delete('/:id', requiresAuth(), controller.recipes.deleteRecipe);
-router.post('/', controller.recipes.createNewRecipe);
+router.post('/', requiresAuth(), controller.recipes.createNewRecipe);
 
 module.exports = router;

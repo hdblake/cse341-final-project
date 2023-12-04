@@ -1,6 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 const { ObjectId } = require('mongodb');
 const mongodb = require('../db/connect');
+const checkInfo = require('./checkInfo');
 const dataChecks = require('../utils/dataChecks');
 const dotenv = require('dotenv');
 dotenv.config();
@@ -77,18 +78,28 @@ const createNewComment = async (req, res, next) => {
     return res.status(400).json({ error: 'Request body is empty' });
   }
   const newComment = req.body;
-  if (
-    !newComment.hasOwnProperty('recipe_id') ||
-    !newComment.recipe_id ||
-    !newComment.hasOwnProperty('user_id') ||
-    !newComment.user_id ||
-    !newComment.hasOwnProperty('comment_text') ||
-    !newComment.comment_text
-  ) {
-    return res.status(400).json({
-      error: 'It is required to have the recipe_id, user_id and comment_text.'
-    });
+  const permittedKeys = ["recipe_id", "comment_text"];
+  let checkExtraInfo = checkInfo.hasExtraInfo(newComment, permittedKeys)
+  if(checkExtraInfo.result){
+    return res.status(400).json({ error: checkExtraInfo.message});
   }
+  const requiredKeys = ["recipe_id", "comment_text"];
+  let checkRequiredKeys = checkInfo.hasRequiredKeys(newComment, requiredKeys);
+  if (checkRequiredKeys.result) {
+    return res.status(400).json({ error: checkRequiredKeys.message });
+  }
+
+  // Get user's Auth0 ID from JWT.
+  const userCredentials = req.oidc.user.sub;
+
+  // Checks if the user exists and get their mongoDB id.
+  let userId;
+  try {
+    userId = await dataChecks.getUserIdByCredentials(userCredentials);
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+  newComment.user_id = userId.toString();
 
   if (
     typeof newComment.user_id !== 'string' ||
@@ -119,20 +130,8 @@ const createNewComment = async (req, res, next) => {
     return res.status(400).json({ error: `The recipe does not exists.` });
   }
 
-  const userId = new ObjectId(newComment.user_id);
-  const doesUserExists = await mongodb
-    .getDb()
-    .db(process.env.DATABASE_NAME)
-    .collection('users')
-    .findOne({ _id: userId });
-  if (!doesUserExists) {
-    return res.status(400).json({ error: `The user does not exists.` });
-  }
-  const result = await mongodb
-    .getDb()
-    .db(process.env.DATABASE_NAME)
-    .collection('comments')
-    .insertOne(newComment);
+  const result = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('comments').insertOne(newComment);
+
   return res.status(201).json({ id: result.insertedId });
 };
 

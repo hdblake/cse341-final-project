@@ -3,6 +3,8 @@ const { ObjectId } = require('mongodb');
 const mongodb = require('../db/connect');
 const dataChecks = require('../utils/dataChecks');
 const dotenv = require('dotenv');
+const checkInfo = require('./checkInfo');
+
 dotenv.config();
 
 const getAllUsers = async (req, res, next) => {
@@ -82,19 +84,24 @@ const createNewUser = async (req, res, next) => {
   if (!req.body || Object.keys(req.body).length === 0) {
     return res.status(400).json({ error: 'Request body is empty' });
   }
+
   const newUser = req.body;
-  if (
-    !newUser.hasOwnProperty('user_name') ||
-    !newUser.user_name ||
-    !newUser.hasOwnProperty('user_credentials') ||
-    !newUser.user_credentials ||
-    !newUser.hasOwnProperty('email') ||
-    !newUser.email
-  ) {
-    return res.status(400).json({
-      error: 'It is required to have the user_name, user_credentials and email.'
-    });
+
+  const permittedKeys = ["user_name", "email"];
+  let checkExtraInfo = checkInfo.hasExtraInfo(newUser, permittedKeys)
+  if(checkExtraInfo.result){
+    return res.status(400).json({ error: checkExtraInfo.message});
   }
+  const requiredKeys = ["user_name", "email"];
+  let checkRequiredKeys = checkInfo.hasRequiredKeys(newUser, requiredKeys);
+  if (checkRequiredKeys.result) {
+    return res.status(400).json({ error: checkRequiredKeys.message });
+  }
+
+  // Get user's Auth0 ID from JWT.
+  const userCredentials = req.oidc.user.sub;
+  newUser.user_credentials = userCredentials;
+
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(newUser.email)) {
