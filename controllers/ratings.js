@@ -1,6 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 const { ObjectId } = require('mongodb');
 const mongodb = require('../db/connect');
+const checkInfo = require('./checkInfo');
 const dataChecks = require('../utils/dataChecks');
 const dotenv = require('dotenv');
 dotenv.config();
@@ -88,12 +89,12 @@ const createNewRating = async (req, res, next) => {
   const newRating = req.body;
 
   const permittedKeys = ["recipe_id", "rating_value"];
-  let checkExtraInfo = checkInfo.hasExtraInfo(newComment, permittedKeys)
+  let checkExtraInfo = checkInfo.hasExtraInfo(newRating, permittedKeys)
   if(checkExtraInfo.result){
     return res.status(400).json({ error: checkExtraInfo.message});
   }
   const requiredKeys = ["recipe_id", "rating_value"];
-  let checkRequiredKeys = checkInfo.hasRequiredKeys(newComment, requiredKeys);
+  let checkRequiredKeys = checkInfo.hasRequiredKeys(newRating, requiredKeys);
   if (checkRequiredKeys.result) {
     return res.status(400).json({ error: checkRequiredKeys.message });
   }
