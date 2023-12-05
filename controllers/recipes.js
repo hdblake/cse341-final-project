@@ -128,24 +128,12 @@ const createNewRecipe = async (req, res, next) => {
   if(checkExtraInfo.result){
     return res.status(400).json({ error: checkExtraInfo.message});
   }
-  const requiredKeys = ["recipe_name", "recipe_instructions"];
+  const requiredKeys = ["recipe_name", "recipe_instructions", "public", "serves", "prep_time", "ingredients"];
   let checkRequiredKeys = checkInfo.hasRequiredKeys(newRecipe, requiredKeys);
   if (checkRequiredKeys.result) {
     return res.status(400).json({ error: checkRequiredKeys.message });
   }
 
-  if (!newRecipe.hasOwnProperty('serves')) {
-    newRecipe.serves = null;
-  }
-  if (!newRecipe.hasOwnProperty('prep_time')) {
-    newRecipe.prep_time = null;
-  }
-  if (!newRecipe.hasOwnProperty('ingredients')) {
-    newRecipe.ingredients = [];
-  }
-  if (!newRecipe.hasOwnProperty('public')) {
-    newRecipe.public = false;
-  }
   if (!newRecipe.hasOwnProperty('rating')) {
     newRecipe.rating = null;
   }
