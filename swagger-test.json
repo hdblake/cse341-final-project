@@ -1,0 +1,628 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "CSE341 - Final Project - Test",
+    "description": "Parallel documentation without swagger fields validation to test the API's data validation",
+    "version": "1.0.0"
+  },
+  "host": "cse341-final-project-kz8y.onrender.com",
+  "basePath": "/",
+  "schemes": ["https"],
+  "paths": {
+    "/recipes/": {
+      "get": {
+        "description": "Get all the public recipes",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "description": "Add a new recipe to the database. You must be logged in to perform this action.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Recipe json object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "recipe_name",
+                "recipe_instructions"
+              ],
+              "properties": {
+                "public": {
+                  "example": true,
+                  "description": "True: visible to everyone. False: visible to only the author."
+                },
+                "serves": {
+                  "example": 4,
+                  "description": "How many people it serves."
+                },
+                "prep_time": {
+                  "example": 30,
+                  "description": "Preparation time in minutes."
+                },
+                "ingredients": {
+                  "example": [
+                    "1 avocado",
+                    "2 tomatoes",
+                    "1/2 onion",
+                    "juice of 1 lemon",
+                    "salt"
+                  ],
+                  "description": "List of ingredients for the recipe."
+                },
+                "recipe_name": {
+                  "example": "Guacamole",
+                  "description": "The name of the recipe."
+                },
+                "recipe_instructions": {
+                  "example": "Mix all the ingredients and serve fresh",
+                  "description": "The instructions for the recipe."
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "422": {
+            "description": "Invalid Data"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/recipes/{id}": {
+      "get": {
+        "description": "Get the recipe with the given id from the database (only if the recipe is public, or if you are the recipe's owner).",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "24 character hex string, 12 byte Uint8Array, or an integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "description": "Update a recipe in the database. You must be logged in and must be the recipe's owner to perform this action.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "24 character hex string, 12 byte Uint8Array, or an integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Recipe json object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "public": {
+                  "example": true,
+                  "description": "True: visible to everyone. False: visible to only the author."
+                },
+                "serves": {
+                  "example": 4,
+                  "description": "How many people it serves."
+                },
+                "prep_time": {
+                  "example": 30,
+                  "description": "Preparation time in minutes."
+                },
+                "ingredients": {
+                  "example": [
+                    "1 avocado",
+                    "2 tomatoes",
+                    "1/2 onion",
+                    "juice of 1 lemon",
+                    "salt"
+                  ],
+                  "description": "List of ingredients for the recipe."
+                },
+                "recipe_name": {
+                  "example": "Guacamole",
+                  "description": "The name of the recipe."
+                },
+                "recipe_instructions": {
+                  "example": "Mix all the ingredients and serve fresh",
+                  "description": "The instructions for the recipe."
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Invalid Data"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete the recipe with the given id from the database. You must be logged in and must be the recipe's owner to perform this action.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "24 character hex string, 12 byte Uint8Array, or an integer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/recipes/{id}/comments": {
+      "get": {
+        "description": "Get the comments from the recipe with the given id from the database (only if the recipe is public, or if you are the recipe's owner).",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "24 character hex string, 12 byte Uint8Array, or an integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/recipes/{id}/ratings": {
+      "get": {
+        "description": "Get the ratings from the recipe with the given id from the database (only if the recipe is public, or if you are the recipe's owner).",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "24 character hex string, 12 byte Uint8Array, or an integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/users/": {
+      "get": {
+        "description": "Get all the users.",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "description": "Add a new user to the database. You must be logged in to perform this action.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "User json object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["user_name", "email"],
+              "properties": {
+                "user_name": {
+                  "example": "Jack Fisherman",
+                  "description": "The name of the user."
+                },
+                "email": {
+                  "example": "jjfish@gmail.com"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "422": {
+            "description": "Invalid Data"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "description": "Get the user with the given id from the database",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "24 character hex string, 12 byte Uint8Array, or an integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "description": "Update a user in the database. You must be logged in and be the respective user to perform this action.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "24 character hex string, 12 byte Uint8Array, or an integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "User json object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user_name": {
+                  "example": "Jack Salesman",
+                  "description": "The name of the user."
+                },
+                "user_credentials": {
+                  "example": "1qaz@WSX3edc$RFV5tgb",
+                  "description": "The user's authentication token."
+                },
+                "email": {
+                  "example": "jjsales@gmail.com"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Invalid Data"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete the user with the given id from the database. You must be logged in and be the respective user to perform this action.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "24 character hex string, 12 byte Uint8Array, or an integer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/comments/": {
+      "post": {
+        "description": "Add a new comment to the database. You must be logged in to perform this action.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Comment json object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["recipe_id", "comment_text"],
+              "properties": {
+                "recipe_id": {
+                  "example": "65553498a52944f24b944e2e",
+                  "description": "The id of the recipe that the comment is for. Must be a 24 character hex string, 12 byte Uint8Array, or an integer"
+                },
+                "comment_text": {
+                  "example": "Delicious recipe! I loved the flavour!"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "422": {
+            "description": "Invalid Data"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/comments/{id}": {
+      "get": {
+        "description": "Get the comment with the given id from the database",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "24 character hex string, 12 byte Uint8Array, or an integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "description": "Update a comment's text in the database. You must be logged in and be the respective comment's owner to perform this action.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "24 character hex string, 12 byte Uint8Array, or an integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Comment json object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "comment_text": {
+                  "example": "Delicious recipe! I loved the flavour!"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Invalid Data"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete the comment with the given id from the database. You must be logged in and be the respective comment's owner to perform this action.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "24 character hex string, 12 byte Uint8Array, or an integer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/ratings/": {
+      "post": {
+        "description": "Add a new rating to the database. You must be logged in to perform this action.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Rating json object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["recipe_id", "rating_value"],
+              "properties": {
+                "recipe_id": {
+                  "example": "65553498a52944f24b944e2e",
+                  "description": "The id of the recipe that the rating is for. Must be a 24 character hex string, 12 byte Uint8Array, or an integer"
+                },
+                "rating_value": {
+                  "example": 5
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "422": {
+            "description": "Invalid Data"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/ratings/{id}": {
+      "get": {
+        "description": "Get the rating with the given id from the database",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "24 character hex string, 12 byte Uint8Array, or an integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "description": "Update a rating's value in the database. You must be logged in and be the respective rating's owner to perform this action.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "24 character hex string, 12 byte Uint8Array, or an integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Rating json object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "rating_value": {
+                  "example": 5
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Invalid Data"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete the rating with the given id from the database. You must be logged in and be the respective rating's owner to perform this action.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "24 character hex string, 12 byte Uint8Array, or an integer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api-docs": {
+      "get": {
+        "description": "Get API documentation",
+        "responses": {
+          "default": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
+}

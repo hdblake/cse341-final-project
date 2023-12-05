@@ -128,7 +128,7 @@ const createNewRating = async (req, res, next) => {
     .collection('recipes')
     .findOne({ _id: recipeId });
   if (!doesRecipeExist) {
-    return res.status(400).json({ error: `The recipe does not exists.` });
+    return res.status(400).json({ error: `The recipe does not exist.` });
   }
 
   const existingRating = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('ratings').findOne({ recipe_id: newRating.recipe_id, user_id: newRating.user_id});
@@ -146,7 +146,7 @@ const createNewRating = async (req, res, next) => {
     .collection('ratings')
     .insertOne(newRating);
 
-  let newAvarageRating = newRating.rating_value;
+  let newAverageRating = newRating.rating_value;
   const allRatings = await mongodb
     .getDb()
     .db(process.env.DATABASE_NAME)
@@ -155,14 +155,14 @@ const createNewRating = async (req, res, next) => {
     .toArray();
 
   if (allRatings.length > 0) {
-    newAvarageRating = calculateNewAverage(allRatings);
+    newAverageRating = calculateNewAverage(allRatings);
   }
 
   await mongodb
     .getDb()
     .db(process.env.DATABASE_NAME)
     .collection('recipes')
-    .updateOne({ _id: recipeId }, { $set: { rating: newAvarageRating } });
+    .updateOne({ _id: recipeId }, { $set: { rating: newAverageRating } });
 
   return res.status(201).json({ id: result.insertedId });
 };
@@ -180,7 +180,7 @@ const deleteRating = async (req, res, next) => {
   if (result.deletedCount > 0) {
     res.status(200).send();
   } else {
-    res.status(500).json(result.error || 'An error occured, please try again.');
+    res.status(500).json(result.error || 'An error occurred, please try again.');
   }
 };
 

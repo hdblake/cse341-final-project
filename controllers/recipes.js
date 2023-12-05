@@ -184,7 +184,7 @@ const deleteRecipe = async (req, res, next) => {
   if (result.deletedCount > 0) {
     res.status(200).send();
   } else {
-    res.status(500).json(result.error || 'An error occured, please try again.');
+    res.status(500).json(result.error || 'An error occurred, please try again.');
   }
 };
 

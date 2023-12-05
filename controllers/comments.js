@@ -127,7 +127,7 @@ const createNewComment = async (req, res, next) => {
     .collection('recipes')
     .findOne({ _id: recipeId });
   if (!doesRecipeExist) {
-    return res.status(400).json({ error: `The recipe does not exists.` });
+    return res.status(400).json({ error: `The comment does not exist.` });
   }
 
   const result = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('comments').insertOne(newComment);
@@ -148,7 +148,7 @@ const deleteComment = async (req, res, next) => {
   if (result.deletedCount > 0) {
     res.status(200).send();
   } else {
-    res.status(500).json(result.error || 'An error occured, please try again.');
+    res.status(500).json(result.error || 'An error occurred, please try again.');
   }
 };
 
