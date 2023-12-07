@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "CSE341 - Final Project",
-    "description": "Final project for cse 341 class for a recipe api",
+    "title": "CSE341 - Final Project - Test",
+    "description": "Parallel documentation without swagger fields validation to test the API's data validation",
     "version": "1.0.0"
   },
   "host": "cse341-final-project-kz8y.onrender.com",
@@ -38,27 +38,18 @@
               ],
               "properties": {
                 "public": {
-                  "type": "boolean",
                   "example": true,
                   "description": "True: visible to everyone. False: visible to only the author."
                 },
                 "serves": {
-                  "type": "integer",
                   "example": 4,
-                  "minimum": 1,
                   "description": "How many people it serves."
                 },
                 "prep_time": {
-                  "type": "integer",
                   "example": 30,
-                  "minimum": 1,
                   "description": "Preparation time in minutes."
                 },
                 "ingredients": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
                   "example": [
                     "1 avocado",
                     "2 tomatoes",
@@ -69,15 +60,11 @@
                   "description": "List of ingredients for the recipe."
                 },
                 "recipe_name": {
-                  "type": "string",
                   "example": "Guacamole",
-                  "minLength": 5,
                   "description": "The name of the recipe."
                 },
                 "recipe_instructions": {
-                  "type": "string",
                   "example": "Mix all the ingredients and serve fresh",
-                  "minLength": 10,
                   "description": "The instructions for the recipe."
                 }
               }
@@ -138,27 +125,18 @@
               "type": "object",
               "properties": {
                 "public": {
-                  "type": "boolean",
                   "example": true,
                   "description": "True: visible to everyone. False: visible to only the author."
                 },
                 "serves": {
-                  "type": "integer",
                   "example": 4,
-                  "minimum": 1,
                   "description": "How many people it serves."
                 },
                 "prep_time": {
-                  "type": "integer",
                   "example": 30,
-                  "minimum": 1,
                   "description": "Preparation time in minutes."
                 },
                 "ingredients": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
                   "example": [
                     "1 avocado",
                     "2 tomatoes",
@@ -169,15 +147,11 @@
                   "description": "List of ingredients for the recipe."
                 },
                 "recipe_name": {
-                  "type": "string",
                   "example": "Guacamole",
-                  "minLength": 5,
                   "description": "The name of the recipe."
                 },
                 "recipe_instructions": {
-                  "type": "string",
                   "example": "Mix all the ingredients and serve fresh",
-                  "minLength": 10,
                   "description": "The instructions for the recipe."
                 }
               }
@@ -301,15 +275,11 @@
               "required": ["user_name", "email"],
               "properties": {
                 "user_name": {
-                  "type": "string",
                   "example": "Jack Fisherman",
-                  "minLength": 2,
                   "description": "The name of the user."
                 },
                 "email": {
-                  "type": "string",
-                  "example": "jjfish@gmail.com",
-                  "pattern": ".+@.+\\..+"
+                  "example": "jjfish@gmail.com"
                 }
               }
             }
@@ -369,15 +339,11 @@
               "type": "object",
               "properties": {
                 "user_name": {
-                  "type": "string",
                   "example": "Jack Salesman",
-                  "minLength": 2,
                   "description": "The name of the user."
                 },
                 "email": {
-                  "type": "string",
-                  "example": "jjsales@gmail.com",
-                  "pattern": ".+@.+\\..+"
+                  "example": "jjsales@gmail.com"
                 }
               }
             }
@@ -436,14 +402,11 @@
               "required": ["recipe_id", "comment_text"],
               "properties": {
                 "recipe_id": {
-                  "type": "string",
                   "example": "65553498a52944f24b944e2e",
                   "description": "The id of the recipe that the comment is for. Must be a 24 character hex string, 12 byte Uint8Array, or an integer"
                 },
                 "comment_text": {
-                  "type": "string",
-                  "example": "Delicious recipe! I loved the flavor!",
-                  "minLength": 3
+                  "example": "Delicious recipe! I loved the flavor!"
                 }
               }
             }
@@ -503,9 +466,7 @@
               "type": "object",
               "properties": {
                 "comment_text": {
-                  "type": "string",
-                  "example": "Delicious recipe! I loved the flavor!",
-                  "minLength": 3
+                  "example": "Delicious recipe! I loved the flavor!"
                 }
               }
             }
@@ -564,14 +525,11 @@
               "required": ["recipe_id", "rating_value"],
               "properties": {
                 "recipe_id": {
-                  "type": "string",
                   "example": "65553498a52944f24b944e2e",
                   "description": "The id of the recipe that the rating is for. Must be a 24 character hex string, 12 byte Uint8Array, or an integer"
                 },
                 "rating_value": {
-                  "type": "integer",
-                  "minimum": 1,
-                  "maximum": 5
+                  "example": 5
                 }
               }
             }
@@ -631,9 +589,7 @@
               "type": "object",
               "properties": {
                 "rating_value": {
-                  "type": "integer",
-                  "minimum": 1,
-                  "maximum": 5
+                  "example": 5
                 }
               }
             }
