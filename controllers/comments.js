@@ -59,7 +59,7 @@ const updateComment = async (req, res, next) => {
   try {
     await dataChecks.checkCollectionForId('comments', id);
   } catch (error) {
-    return res.status(422).send(error.message);
+    return res.status(404).send(error.message);
   }
 
   // Query for a comment with the given comment id and user id.
@@ -151,19 +151,44 @@ const deleteComment = async (req, res, next) => {
   const id = req.params.id;
   const objectId = new ObjectId(id);
 
-  const result = await mongodb
+  // Get user's Auth0 ID from JWT.
+  const userCredentials = req.oidc.user.sub;
+
+  // Checks if the user exists and get their mongoDB id.
+  let userId;
+  try {
+    userId = await dataChecks.getUserIdByCredentials(userCredentials);
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+
+  // Checks if the given comment id is valid.
+  try {
+    await dataChecks.checkCollectionForId('comments', id);
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+
+  // Query for a comment with the given comment id and user id.
+  const query = {
+    _id: new ObjectId(id),
+    author: userId
+  };
+  const comments = await mongodb
     .getDb()
     .db(process.env.DATABASE_NAME)
-    .collection('comments')
-    .deleteOne({ _id: objectId });
+    .collection('comments');
+  const result = await comments.findOne(query);
 
-  if (result.deletedCount > 0) {
-    res.status(200).send();
-  } else {
-    res
-      .status(500)
-      .json(result.error || 'An error occurred, please try again.');
+  if (!result) {
+    return res
+      .status(403)
+      .send("You must be the comment's author in order to delete it");
   }
+
+  comments.deleteOne({ _id: objectId });
+
+  res.status(200).send();
 };
 
 module.exports = {

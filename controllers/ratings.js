@@ -68,7 +68,7 @@ const updateRating = async (req, res, next) => {
   try {
     await dataChecks.checkCollectionForId('ratings', id);
   } catch (error) {
-    return res.status(422).send(error.message);
+    return res.status(404).send(error.message);
   }
 
   // Query for a rating with the given rating id and user id.
@@ -182,19 +182,44 @@ const deleteRating = async (req, res, next) => {
   const id = req.params.id;
   const objectId = new ObjectId(id);
 
-  const result = await mongodb
+  // Get user's Auth0 ID from JWT.
+  const userCredentials = req.oidc.user.sub;
+
+  // Checks if the user exists and get their mongoDB id.
+  let userId;
+  try {
+    userId = await dataChecks.getUserIdByCredentials(userCredentials);
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+
+  // Checks if the given rating id is valid.
+  try {
+    await dataChecks.checkCollectionForId('ratings', id);
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+
+  // Query for a rating with the given rating id and user id.
+  const query = {
+    _id: new ObjectId(id),
+    author: userId
+  };
+  const ratings = await mongodb
     .getDb()
     .db(process.env.DATABASE_NAME)
-    .collection('ratings')
-    .deleteOne({ _id: objectId });
+    .collection('ratings');
+  const result = await ratings.findOne(query);
 
-  if (result.deletedCount > 0) {
-    res.status(200).send();
-  } else {
-    res
-      .status(500)
-      .json(result.error || 'An error occurred, please try again.');
+  if (!result) {
+    return res
+      .status(403)
+      .send("You must be the rating's author in order to delete it");
   }
+
+  ratings.deleteOne({ _id: objectId });
+
+  res.status(200).send();
 };
 
 module.exports = {

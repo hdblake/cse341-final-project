@@ -62,7 +62,7 @@ const updateUser = async (req, res, next) => {
   try {
     await dataChecks.checkCollectionForId('users', idToUpdate);
   } catch (error) {
-    return res.status(422).send(error.message);
+    return res.status(404).send(error.message);
   }
 
   // Ensures the current user is the same as the user to be updated.
@@ -134,8 +134,34 @@ const createNewUser = async (req, res, next) => {
 };
 
 const deleteUser = async (req, res, next) => {
+  // The id of the user that will be deleted.
   const id = req.params.id;
   const objectId = new ObjectId(id);
+
+  // Get user's Auth0 ID from JWT.
+  const currentUserCredentials = req.oidc.user.sub;
+
+  // Checks if the user to be deleted exists and get their mongoDB id.
+  let currentUserId;
+  try {
+    currentUserId = await dataChecks.getUserIdByCredentials(
+      currentUserCredentials
+    );
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+
+  // Checks if the given user id is valid.
+  try {
+    await dataChecks.checkCollectionForId('users', id);
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+
+  // Ensures the current user is the same as the user to be deleted.
+  if (currentUserId !== id) {
+    return res.status(403).send("You must be the profile's owner in order to delete it.");
+  }
 
   const result = await mongodb
     .getDb()
@@ -143,11 +169,7 @@ const deleteUser = async (req, res, next) => {
     .collection('users')
     .deleteOne({ _id: objectId });
 
-  if (result.deletedCount > 0) {
-    res.status(200).send();
-  } else {
-    res.status(500).json(result.error || 'An error occured, please try again.');
-  }
+  res.status(200).send();
 };
 
 module.exports = {

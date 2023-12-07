@@ -112,7 +112,7 @@ const updateRecipe = async (req, res, next) => {
   try {
     await dataChecks.checkCollectionForId('recipes', id);
   } catch (error) {
-    return res.status(422).send(error.message);
+    return res.status(404).send(error.message);
   }
 
   // Query for a recipe with the given recipe id and user id.
@@ -129,7 +129,7 @@ const updateRecipe = async (req, res, next) => {
   if (result.matchedCount === 0) {
     return res
       .status(403)
-      .send('You must be the recipes author in order to edit it');
+      .send("You must be the recipe's author in order to edit it");
   }
   return res.status(204).send();
 };
@@ -199,19 +199,44 @@ const deleteRecipe = async (req, res, next) => {
   const id = req.params.id;
   const objectId = new ObjectId(id);
 
-  const result = await mongodb
+  // Get user's Auth0 ID from JWT.
+  const userCredentials = req.oidc.user.sub;
+
+  // Checks if the user exists and get their mongoDB id.
+  let userId;
+  try {
+    userId = await dataChecks.getUserIdByCredentials(userCredentials);
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+
+  // Checks if the given recipe id is valid.
+  try {
+    await dataChecks.checkCollectionForId('recipes', id);
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+
+  // Query for a recipe with the given recipe id and user id.
+  const query = {
+    _id: new ObjectId(id),
+    author: userId
+  };
+  const recipes = await mongodb
     .getDb()
     .db(process.env.DATABASE_NAME)
-    .collection('recipes')
-    .deleteOne({ _id: objectId });
+    .collection('recipes');
+  const result = await recipes.findOne(query);
 
-  if (result.deletedCount > 0) {
-    res.status(200).send();
-  } else {
-    res
-      .status(500)
-      .json(result.error || 'An error occurred, please try again.');
+  if (!result) {
+    return res
+      .status(403)
+      .send("You must be the recipe's author in order to delete it");
   }
+
+  recipes.deleteOne({ _id: objectId });
+
+  res.status(200).send();
 };
 
 module.exports = {
