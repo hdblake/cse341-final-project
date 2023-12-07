@@ -45,6 +45,14 @@ const calculateNewAverage = (allRatings) => {
 const updateRating = async (req, res, next) => {
   const ratingData = req.body;
   const id = req.params.id;
+
+  // Let only the allowed keys to be updated.
+  const permittedKeys = ['rating_value'];
+  let checkExtraInfo = checkInfo.hasExtraInfo(ratingData, permittedKeys);
+  if (checkExtraInfo.result) {
+    return res.status(400).json({ error: checkExtraInfo.message });
+  }
+
   // Get user's Auth0 ID from JWT.
   const userCredentials = req.oidc.user.sub;
 
@@ -66,7 +74,7 @@ const updateRating = async (req, res, next) => {
   // Query for a rating with the given rating id and user id.
   const query = {
     _id: new ObjectId(id),
-    user_id: userId.toString(),
+    user_id: userId.toString()
   };
   const ratings = await mongodb
     .getDb()
@@ -88,12 +96,12 @@ const createNewRating = async (req, res, next) => {
   }
   const newRating = req.body;
 
-  const permittedKeys = ["recipe_id", "rating_value"];
-  let checkExtraInfo = checkInfo.hasExtraInfo(newRating, permittedKeys)
-  if(checkExtraInfo.result){
-    return res.status(400).json({ error: checkExtraInfo.message});
+  const permittedKeys = ['recipe_id', 'rating_value'];
+  let checkExtraInfo = checkInfo.hasExtraInfo(newRating, permittedKeys);
+  if (checkExtraInfo.result) {
+    return res.status(400).json({ error: checkExtraInfo.message });
   }
-  const requiredKeys = ["recipe_id", "rating_value"];
+  const requiredKeys = ['recipe_id', 'rating_value'];
   let checkRequiredKeys = checkInfo.hasRequiredKeys(newRating, requiredKeys);
   if (checkRequiredKeys.result) {
     return res.status(400).json({ error: checkRequiredKeys.message });
@@ -131,8 +139,11 @@ const createNewRating = async (req, res, next) => {
     return res.status(400).json({ error: `The recipe does not exist.` });
   }
 
-  const existingRating = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('ratings').findOne({ recipe_id: newRating.recipe_id, user_id: newRating.user_id});
-
+  const existingRating = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('ratings')
+    .findOne({ recipe_id: newRating.recipe_id, user_id: newRating.user_id });
 
   if (existingRating) {
     return res
@@ -180,7 +191,9 @@ const deleteRating = async (req, res, next) => {
   if (result.deletedCount > 0) {
     res.status(200).send();
   } else {
-    res.status(500).json(result.error || 'An error occurred, please try again.');
+    res
+      .status(500)
+      .json(result.error || 'An error occurred, please try again.');
   }
 };
 

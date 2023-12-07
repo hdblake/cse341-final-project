@@ -41,6 +41,13 @@ const updateUser = async (req, res, next) => {
   // Get user's Auth0 ID from JWT.
   const currentUserCredentials = req.oidc.user.sub;
 
+  // Let only the allowed keys to be updated.
+  const permittedKeys = ['user_name', 'email'];
+  let checkExtraInfo = checkInfo.hasExtraInfo(userData, permittedKeys);
+  if (checkExtraInfo.result) {
+    return res.status(400).json({ error: checkExtraInfo.message });
+  }
+
   // Checks if the user to be updated exists and get their mongoDB id.
   let currentUserId;
   try {
@@ -66,7 +73,7 @@ const updateUser = async (req, res, next) => {
   // Update the user's data.
   try {
     const query = {
-      _id: new ObjectId(idToUpdate),
+      _id: new ObjectId(idToUpdate)
     };
     const users = await mongodb
       .getDb()
@@ -87,12 +94,12 @@ const createNewUser = async (req, res, next) => {
 
   const newUser = req.body;
 
-  const permittedKeys = ["user_name", "email"];
-  let checkExtraInfo = checkInfo.hasExtraInfo(newUser, permittedKeys)
-  if(checkExtraInfo.result){
-    return res.status(400).json({ error: checkExtraInfo.message});
+  const permittedKeys = ['user_name', 'email'];
+  let checkExtraInfo = checkInfo.hasExtraInfo(newUser, permittedKeys);
+  if (checkExtraInfo.result) {
+    return res.status(400).json({ error: checkExtraInfo.message });
   }
-  const requiredKeys = ["user_name", "email"];
+  const requiredKeys = ['user_name', 'email'];
   let checkRequiredKeys = checkInfo.hasRequiredKeys(newUser, requiredKeys);
   if (checkRequiredKeys.result) {
     return res.status(400).json({ error: checkRequiredKeys.message });
@@ -101,7 +108,6 @@ const createNewUser = async (req, res, next) => {
   // Get user's Auth0 ID from JWT.
   const userCredentials = req.oidc.user.sub;
   newUser.user_credentials = userCredentials;
-
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(newUser.email)) {

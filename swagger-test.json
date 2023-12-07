@@ -336,10 +336,6 @@
                   "example": "Jack Salesman",
                   "description": "The name of the user."
                 },
-                "user_credentials": {
-                  "example": "1qaz@WSX3edc$RFV5tgb",
-                  "description": "The user's authentication token."
-                },
                 "email": {
                   "example": "jjsales@gmail.com"
                 }
@@ -398,7 +394,7 @@
                   "description": "The id of the recipe that the comment is for. Must be a 24 character hex string, 12 byte Uint8Array, or an integer"
                 },
                 "comment_text": {
-                  "example": "Delicious recipe! I loved the flavour!"
+                  "example": "Delicious recipe! I loved the flavor!"
                 }
               }
             }
@@ -458,7 +454,7 @@
               "type": "object",
               "properties": {
                 "comment_text": {
-                  "example": "Delicious recipe! I loved the flavour!"
+                  "example": "Delicious recipe! I loved the flavor!"
                 }
               }
             }

@@ -36,6 +36,14 @@ const getCommentsById = async (req, res, next) => {
 const updateComment = async (req, res, next) => {
   const commentData = req.body;
   const id = req.params.id;
+
+  // Let only the allowed keys to be updated.
+  const permittedKeys = ['comment_text'];
+  let checkExtraInfo = checkInfo.hasExtraInfo(commentData, permittedKeys);
+  if (checkExtraInfo.result) {
+    return res.status(400).json({ error: checkExtraInfo.message });
+  }
+
   // Get user's Auth0 ID from JWT.
   const userCredentials = req.oidc.user.sub;
 
@@ -57,7 +65,7 @@ const updateComment = async (req, res, next) => {
   // Query for a comment with the given comment id and user id.
   const query = {
     _id: new ObjectId(id),
-    user_id: userId.toString(),
+    user_id: userId.toString()
   };
   const comments = await mongodb
     .getDb()
@@ -78,12 +86,12 @@ const createNewComment = async (req, res, next) => {
     return res.status(400).json({ error: 'Request body is empty' });
   }
   const newComment = req.body;
-  const permittedKeys = ["recipe_id", "comment_text"];
-  let checkExtraInfo = checkInfo.hasExtraInfo(newComment, permittedKeys)
-  if(checkExtraInfo.result){
-    return res.status(400).json({ error: checkExtraInfo.message});
+  const permittedKeys = ['recipe_id', 'comment_text'];
+  let checkExtraInfo = checkInfo.hasExtraInfo(newComment, permittedKeys);
+  if (checkExtraInfo.result) {
+    return res.status(400).json({ error: checkExtraInfo.message });
   }
-  const requiredKeys = ["recipe_id", "comment_text"];
+  const requiredKeys = ['recipe_id', 'comment_text'];
   let checkRequiredKeys = checkInfo.hasRequiredKeys(newComment, requiredKeys);
   if (checkRequiredKeys.result) {
     return res.status(400).json({ error: checkRequiredKeys.message });
@@ -130,7 +138,11 @@ const createNewComment = async (req, res, next) => {
     return res.status(400).json({ error: `The comment does not exist.` });
   }
 
-  const result = await mongodb.getDb().db(process.env.DATABASE_NAME).collection('comments').insertOne(newComment);
+  const result = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('comments')
+    .insertOne(newComment);
 
   return res.status(201).json({ id: result.insertedId });
 };
@@ -148,7 +160,9 @@ const deleteComment = async (req, res, next) => {
   if (result.deletedCount > 0) {
     res.status(200).send();
   } else {
-    res.status(500).json(result.error || 'An error occurred, please try again.');
+    res
+      .status(500)
+      .json(result.error || 'An error occurred, please try again.');
   }
 };
 

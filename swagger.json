@@ -368,11 +368,6 @@
                   "minLength": 2,
                   "description": "The name of the user."
                 },
-                "user_credentials": {
-                  "type": "string",
-                  "example": "1qaz@WSX3edc$RFV5tgb",
-                  "description": "The user's authentication token."
-                },
                 "email": {
                   "type": "string",
                   "example": "jjsales@gmail.com",
@@ -435,7 +430,7 @@
                 },
                 "comment_text": {
                   "type": "string",
-                  "example": "Delicious recipe! I loved the flavour!",
+                  "example": "Delicious recipe! I loved the flavor!",
                   "minLength": 3
                 }
               }
@@ -497,7 +492,7 @@
               "properties": {
                 "comment_text": {
                   "type": "string",
-                  "example": "Delicious recipe! I loved the flavour!",
+                  "example": "Delicious recipe! I loved the flavor!",
                   "minLength": 3
                 }
               }

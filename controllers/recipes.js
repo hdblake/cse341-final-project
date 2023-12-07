@@ -31,10 +31,10 @@ const getRecipeById = async (req, res, next) => {
     .collection('recipes')
     .findOne({ _id: objectId });
   if (result) {
-    if(result.public || result.author == userId){
+    if (result.public || result.author == userId) {
       res.setHeader('Content-Type', 'application/json');
       res.status(200).json(result);
-    } else{
+    } else {
       res.status(404).send("You don't have the permission to see this recipe");
     }
   } else {
@@ -81,6 +81,22 @@ const getRecipeRatings = async (req, res, next) => {
 const updateRecipe = async (req, res, next) => {
   const recipeData = req.body;
   const id = req.params.id;
+
+  // Let only the allowed keys to be updated.
+  const permittedKeys = [
+    'public',
+    'serves',
+    'prep_time',
+    'ingredients',
+    'recipe_name',
+    'recipe_instructions',
+    'rating'
+  ];
+  let checkExtraInfo = checkInfo.hasExtraInfo(recipeData, permittedKeys);
+  if (checkExtraInfo.result) {
+    return res.status(400).json({ error: checkExtraInfo.message });
+  }
+
   // Get user's Auth0 ID from JWT.
   const userCredentials = req.oidc.user.sub;
 
@@ -123,12 +139,20 @@ const createNewRecipe = async (req, res, next) => {
     return res.status(400).json({ error: 'Request body is empty' });
   }
   const newRecipe = req.body;
-  const permittedKeys = [  "public", "serves", "prep_time", "ingredients", "recipe_name", "recipe_instructions", "rating"];
-  let checkExtraInfo = checkInfo.hasExtraInfo(newRecipe, permittedKeys)
-  if(checkExtraInfo.result){
-    return res.status(400).json({ error: checkExtraInfo.message});
+  const permittedKeys = [
+    'public',
+    'serves',
+    'prep_time',
+    'ingredients',
+    'recipe_name',
+    'recipe_instructions',
+    'rating'
+  ];
+  let checkExtraInfo = checkInfo.hasExtraInfo(newRecipe, permittedKeys);
+  if (checkExtraInfo.result) {
+    return res.status(400).json({ error: checkExtraInfo.message });
   }
-  const requiredKeys = ["recipe_name", "recipe_instructions"];
+  const requiredKeys = ['recipe_name', 'recipe_instructions'];
   let checkRequiredKeys = checkInfo.hasRequiredKeys(newRecipe, requiredKeys);
   if (checkRequiredKeys.result) {
     return res.status(400).json({ error: checkRequiredKeys.message });
@@ -160,7 +184,7 @@ const createNewRecipe = async (req, res, next) => {
   } catch (error) {
     return res.status(404).send(error.message);
   }
-  
+
   newRecipe.author = userId.toString();
 
   const result = await mongodb
@@ -184,7 +208,9 @@ const deleteRecipe = async (req, res, next) => {
   if (result.deletedCount > 0) {
     res.status(200).send();
   } else {
-    res.status(500).json(result.error || 'An error occurred, please try again.');
+    res
+      .status(500)
+      .json(result.error || 'An error occurred, please try again.');
   }
 };
 
