@@ -103,6 +103,34 @@ const updateRating = async (req, res, next) => {
       .collection('ratings');
     const result = await ratings.updateOne(query, { $set: ratingData });
 
+    const updatedRating = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('ratings')
+    .findOne({ _id: new ObjectId(id) });
+
+    let recipeId = null;
+    if(updatedRating){
+      recipeId = new ObjectId(updatedRating.recipe_id);
+      let newAvarageRating = 0;
+      const allRatings = await mongodb
+        .getDb()
+        .db(process.env.DATABASE_NAME)
+        .collection('ratings')
+        .find({ recipe_id: updatedRating.recipe_id })
+        .toArray();
+
+      if (allRatings.length > 0) {
+        newAvarageRating = calculateNewAverage(allRatings);
+      }
+
+      mongodb
+        .getDb()
+        .db(process.env.DATABASE_NAME)
+        .collection('recipes')
+        .updateOne({ _id: recipeId }, { $set: { rating: newAvarageRating } });
+    }
+
     if (result.matchedCount === 0) {
       return res
         .status(403)
@@ -220,6 +248,16 @@ const deleteRating = async (req, res, next) => {
   try {
     const id = req.params.id;
     const objectId = new ObjectId(id);
+    const deletedRating = await mongodb
+    .getDb()
+    .db(process.env.DATABASE_NAME)
+    .collection('ratings')
+    .findOne({ _id: objectId });
+    let recipeId = null;
+    if(deletedRating){
+      recipeId = new ObjectId(deletedRating.recipe_id);
+    }
+
 
     // Get user's Auth0 ID from JWT.
     const userCredentials = req.oidc.user.sub;
@@ -257,6 +295,25 @@ const deleteRating = async (req, res, next) => {
     }
 
     ratings.deleteOne({ _id: objectId });
+    if(recipeId != null){
+      let newAvarageRating = 0;
+      const allRatings = await mongodb
+        .getDb()
+        .db(process.env.DATABASE_NAME)
+        .collection('ratings')
+        .find({ recipe_id: deletedRating.recipe_id })
+        .toArray();
+
+      if (allRatings.length > 0) {
+        newAvarageRating = calculateNewAverage(allRatings);
+      }
+
+      mongodb
+        .getDb()
+        .db(process.env.DATABASE_NAME)
+        .collection('recipes')
+        .updateOne({ _id: recipeId }, { $set: { rating: newAvarageRating } });
+    }
 
     res.status(200).send();
   } catch (error) {
