@@ -19,7 +19,7 @@ router.post(
   '/',
   requiresAuth(),
   bodyParser.json(),
-  dataChecks.validateRecipeCreation,
+  dataChecks.validateRatingCreation,
   dataChecks.validate,
   controller.ratings.createNewRating
 );
