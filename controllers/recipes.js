@@ -197,33 +197,16 @@ const createNewRecipe = async (req, res, next) => {
       'prep_time',
       'ingredients',
       'recipe_name',
-      'recipe_instructions',
-      'rating'
+      'recipe_instructions'
     ];
     let checkExtraInfo = checkInfo.hasExtraInfo(newRecipe, permittedKeys);
     if (checkExtraInfo.result) {
       return res.status(400).json({ error: checkExtraInfo.message });
     }
-    const requiredKeys = ['recipe_name', 'recipe_instructions'];
+    const requiredKeys = ['recipe_name', 'serves', 'prep_time', 'ingredients', 'public', 'recipe_instructions'];
     let checkRequiredKeys = checkInfo.hasRequiredKeys(newRecipe, requiredKeys);
     if (checkRequiredKeys.result) {
       return res.status(400).json({ error: checkRequiredKeys.message });
-    }
-
-    if (!newRecipe.hasOwnProperty('serves')) {
-      newRecipe.serves = null;
-    }
-    if (!newRecipe.hasOwnProperty('prep_time')) {
-      newRecipe.prep_time = null;
-    }
-    if (!newRecipe.hasOwnProperty('ingredients')) {
-      newRecipe.ingredients = [];
-    }
-    if (!newRecipe.hasOwnProperty('public')) {
-      newRecipe.public = false;
-    }
-    if (!newRecipe.hasOwnProperty('rating')) {
-      newRecipe.rating = null;
     }
 
     // Get user's Auth0 ID from JWT.

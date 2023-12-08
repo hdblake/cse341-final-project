@@ -33,6 +33,10 @@
             "schema": {
               "type": "object",
               "required": [
+                "public",
+                "serves",
+                "prep_time",
+                "ingredients",
                 "recipe_name",
                 "recipe_instructions"
               ],
